@@ -1,0 +1,15 @@
+{
+  "name": "financial-data-quality-validator",
+  "version": "1.0.0",
+  "description": "Rule-based financial data quality validator detecting schema breaches, ISO format anomalies, ISIN checksum errors, LEI violations, and business logic inconsistencies",
+  "main": "index.js",
+  "bin": {
+    "data-validator": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["fintech", "data-quality", "isin-validation", "iso4217", "lei", "compliance", "trade-surveillance"],
+  "author": "",
+  "license": "MIT"
+}

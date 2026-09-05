@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Data Quality Validator</title>
+  <style>
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --bg: #090d16;
+      --bg-card: rgba(18, 26, 44, 0.75);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at 50% 0%, #1e1e38 0%, var(--bg) 75%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .actions { display: flex; gap: 10px; }
+    button {
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    button.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+    }
+    button.primary:hover { background: var(--primary-hover); }
+
+    main {
+      flex: 1;
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .metric-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .panel-title { font-size: 1rem; font-weight: 700; }
+
+    textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      padding: 12px;
+      outline: none;
+      resize: vertical;
+      min-height: 140px;
+    }
+    textarea:focus { border-color: var(--primary); }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+    }
+    .filter-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    input[type="text"] {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      outline: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    td code {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-pass { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-critical { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .badge-error { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+    .issue-item {
+      display: inline-block;
+      margin: 2px 0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+    }
+    .issue-critical { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+    .issue-error { background: rgba(249, 115, 22, 0.15); color: #fdba74; }
+    .issue-warning { background: rgba(245, 158, 11, 0.15); color: #fde68a; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span>🛡️ Financial Data Quality Validator</span>
+      <span class="logo-badge">ISO & Compliance Rules</span>
+    </div>
+    <div class="actions">
+      <button id="loadJsonBtn">📦 Load JSON Sample</button>
+      <button id="loadCsvBtn">📄 Load CSV Sample</button>
+      <button class="primary" id="validateBtn">⚡ Run Validation</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Data Quality Score</div>
+        <div class="metric-value" id="kpiScore" style="color: #60a5fa;">0%</div>
+        <div class="metric-sub" id="kpiScoreSub">0 of 0 records valid</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Critical Violations</div>
+        <div class="metric-value" id="kpiCritical" style="color: #f87171;">0</div>
+        <div class="metric-sub">Checksum & missing IDs</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Format / Rule Errors</div>
+        <div class="metric-value" id="kpiErrors" style="color: #fb923c;">0</div>
+        <div class="metric-sub">ISO 4217, LEI & pricing</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Warnings & Duplicates</div>
+        <div class="metric-value" id="kpiWarnings" style="color: #fbbf24;">0</div>
+        <div class="metric-sub">Settlement anomalies</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Data Ingestion (JSON or CSV)</span>
+      </div>
+      <textarea id="dataInput"></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="filter-bar">
+          <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Filter Severity:</span>
+          <button class="filter-btn active" data-filter="ALL">All (<span id="countAll">0</span>)</button>
+          <button class="filter-btn" data-filter="PASS">Pass (<span id="countPass">0</span>)</button>
+          <button class="filter-btn" data-filter="CRITICAL">Critical (<span id="countCritical">0</span>)</button>
+          <button class="filter-btn" data-filter="ERROR">Error (<span id="countError">0</span>)</button>
+          <button class="filter-btn" data-filter="WARNING">Warning (<span id="countWarning">0</span>)</button>
+        </div>
+        <div>
+          <input type="text" id="searchInput" placeholder="Search ISIN, ID, error...">
+          <button id="exportAuditBtn" style="padding: 6px 12px; margin-left: 6px;">📥 Export Audit Report</button>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Trade ID</th>
+              <th>ISIN / Instrument</th>
+              <th>Side / Qty / Price</th>
+              <th>Currency</th>
+              <th>Validation Rule Violations</th>
+            </tr>
+          </thead>
+          <tbody id="resultsTableBody">
+            <tr><td colspan="6" style="color: var(--text-muted); text-align: center;">Click "Run Validation" to analyze records.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const sampleJsonText = `[
+  {
+    "trade_id": "TRD-88001",
+    "timestamp": "2026-09-01T10:14:22Z",
+    "isin": "US0378331005",
+    "security_name": "Apple Inc. Common Stock",
+    "side": "BUY",
+    "quantity": 500,
+    "price": 224.50,
+    "currency": "USD",
+    "counterparty_lei": "5493006MHB84DD0ZWV18",
+    "settlement_date": "2026-09-03"
+  },
+  {
+    "trade_id": "TRD-88002",
+    "timestamp": "2026-09-01T10:18:05Z",
+    "isin": "US0378331009",
+    "security_name": "Invalid ISIN Test Stock",
+    "side": "SELL",
+    "quantity": 1200,
+    "price": 18.25,
+    "currency": "USD",
+    "counterparty_lei": "5493001KJTIIGC8Y1R12",
+    "settlement_date": "2026-09-03"
+  },
+  {
+    "trade_id": "TRD-88003",
+    "timestamp": "2026-09-02T11:05:40Z",
+    "isin": "GB0002374006",
+    "security_name": "Diageo plc Ordinary Shares",
+    "side": "BUY",
+    "quantity": -200,
+    "price": 28.90,
+    "currency": "GBP",
+    "counterparty_lei": "21380068P1DRHMJ8KU70",
+    "settlement_date": "2026-09-04"
+  },
+  {
+    "trade_id": "TRD-88004",
+    "timestamp": "2026-09-02T14:30:00Z",
+    "isin": "DE0007100000",
+    "security_name": "Mercedes-Benz Group AG",
+    "side": "BUY",
+    "quantity": 850,
+    "price": 62.40,
+    "currency": "EURR",
+    "counterparty_lei": "529900B5B11J7G7Y9716",
+    "settlement_date": "2026-09-04"
+  },
+  {
+    "trade_id": "TRD-88005",
+    "timestamp": "INVALID_DATE_FORMAT",
+    "isin": "US5949181045",
+    "security_name": "Microsoft Corp",
+    "side": "BUY",
+    "quantity": 400,
+    "price": 415.80,
+    "currency": "USD",
+    "counterparty_lei": "INVALID_LEI_TOO_SHORT",
+    "settlement_date": "2026-09-04"
+  },
+  {
+    "trade_id": "TRD-88006",
+    "timestamp": "2026-09-03T09:12:10Z",
+    "isin": "US02079K3059",
+    "security_name": "Alphabet Inc. Class A",
+    "side": "HOLD",
+    "quantity": 300,
+    "price": -150.00,
+    "currency": "USD",
+    "counterparty_lei": "5493006MHB84DD0ZWV18",
+    "settlement_date": "2026-09-01"
+  },
+  {
+    "trade_id": "TRD-88001",
+    "timestamp": "2026-09-03T15:45:00Z",
+    "isin": "US0378331005",
+    "security_name": "Apple Inc. Duplicate Record",
+    "side": "BUY",
+    "quantity": 100,
+    "price": 225.10,
+    "currency": "USD",
+    "counterparty_lei": "5493006MHB84DD0ZWV18",
+    "settlement_date": "2026-09-05"
+  },
+  {
+    "trade_id": "TRD-88007",
+    "timestamp": "2026-09-04T12:00:00Z",
+    "isin": "FR0000120271",
+    "security_name": "TotalEnergies SE",
+    "side": "SELL",
+    "quantity": 1500,
+    "price": 64.20,
+    "currency": "EUR",
+    "counterparty_lei": "529900W18LQJJN6SJ336",
+    "settlement_date": "2026-09-06"
+  }
+]`;
+
+    const sampleCsvText = `trade_id,timestamp,isin,security_name,side,quantity,price,currency,counterparty_lei,settlement_date
+TRD-88001,2026-09-01T10:14:22Z,US0378331005,Apple Inc. Common Stock,BUY,500,224.50,USD,5493006MHB84DD0ZWV18,2026-09-03
+TRD-88002,2026-09-01T10:18:05Z,US0378331009,Invalid ISIN Test Stock,SELL,1200,18.25,USD,5493001KJTIIGC8Y1R12,2026-09-03
+TRD-88003,2026-09-02T11:05:40Z,GB0002374006,Diageo plc Ordinary Shares,BUY,-200,28.90,GBP,21380068P1DRHMJ8KU70,2026-09-04
+TRD-88004,2026-09-02T14:30:00Z,DE0007100000,Mercedes-Benz Group AG,BUY,850,62.40,EURR,529900B5B11J7G7Y9716,2026-09-04
+TRD-88005,INVALID_DATE_FORMAT,US5949181045,Microsoft Corp,BUY,400,415.80,USD,INVALID_LEI_TOO_SHORT,2026-09-04
+TRD-88006,2026-09-03T09:12:10Z,US02079K3059,Alphabet Inc. Class A,HOLD,300,-150.00,USD,5493006MHB84DD0ZWV18,2026-09-01
+TRD-88001,2026-09-03T15:45:00Z,US0378331005,Apple Inc. Duplicate Record,BUY,100,225.10,USD,5493006MHB84DD0ZWV18,2026-09-05
+TRD-88007,2026-09-04T12:00:00Z,FR0000120271,TotalEnergies SE,SELL,1500,64.20,EUR,529900W18LQJJN6SJ336,2026-09-06`;
+
+    const ISO_CURRENCIES = new Set([
+      'USD','EUR','GBP','JPY','CAD','CHF','AUD','HKD','SGD','INR','CNY','NZD','SEK','NOK','KRW','MXN','BRL','ZAR'
+    ]);
+
+    function isValidISIN(isin) {
+      if (!isin || typeof isin !== 'string' || !/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) return false;
+      let digits = '';
+      for (let i = 0; i < 11; i++) {
+        const c = isin[i];
+        if (c >= 'A' && c <= 'Z') {
+          digits += (c.charCodeAt(0) - 55).toString();
+        } else {
+          digits += c;
+        }
+      }
+      let sum = 0;
+      let dpos = 0;
+      for (let i = digits.length - 1; i >= 0; i--) {
+        let n = parseInt(digits[i], 10);
+        if (dpos % 2 === 0) {
+          n *= 2;
+          if (n > 9) n = Math.floor(n / 10) + (n % 10);
+        }
+        sum += n;
+        dpos++;
+      }
+      const checkDigit = (10 - (sum % 10)) % 10;
+      return checkDigit === parseInt(isin[11], 10);
+    }
+
+    function isValidLEI(lei) {
+      if (!lei || typeof lei !== 'string') return false;
+      return /^[0-9A-Z]{20}$/.test(lei);
+    }
+
+    function validateDataset(records) {
+      const idCounts = {};
+      records.forEach(r => {
+        if (r.trade_id) idCounts[r.trade_id] = (idCounts[r.trade_id] || 0) + 1;
+      });
+
+      return records.map(rec => {
+        const issues = [];
+
+        // Check Trade ID
+        if (!rec.trade_id) {
+          issues.push({ severity: 'CRITICAL', code: 'MISSING_ID', msg: 'Missing mandatory trade_id' });
+        } else if (idCounts[rec.trade_id] > 1) {
+          issues.push({ severity: 'WARNING', code: 'DUPLICATE_ID', msg: `Duplicate trade_id '${rec.trade_id}' detected` });
+        }
+
+        // ISIN Checksum Check
+        if (!rec.isin) {
+          issues.push({ severity: 'CRITICAL', code: 'MISSING_ISIN', msg: 'Missing ISIN identifier' });
+        } else if (!isValidISIN(rec.isin)) {
+          issues.push({ severity: 'CRITICAL', code: 'INVALID_ISIN_CHECKSUM', msg: `ISIN '${rec.isin}' failed ISO 6166 checksum` });
+        }
+
+        // Currency Check
+        if (!rec.currency) {
+          issues.push({ severity: 'ERROR', code: 'MISSING_CURRENCY', msg: 'Missing currency' });
+        } else if (!ISO_CURRENCIES.has(rec.currency.toUpperCase())) {
+          issues.push({ severity: 'ERROR', code: 'INVALID_ISO4217_CURRENCY', msg: `Currency '${rec.currency}' not in ISO 4217` });
+        }
+
+        // Price Check
+        const price = parseFloat(rec.price);
+        if (isNaN(price) || price <= 0) {
+          issues.push({ severity: 'ERROR', code: 'INVALID_PRICE', msg: `Trade price (${rec.price}) must be positive` });
+        }
+
+        // Quantity Check
+        const qty = parseFloat(rec.quantity);
+        if (isNaN(qty) || qty <= 0) {
+          issues.push({ severity: 'ERROR', code: 'INVALID_QUANTITY', msg: `Quantity (${rec.quantity}) must be positive` });
+        }
+
+        // Side Check
+        const side = (rec.side || '').toUpperCase();
+        if (!['BUY', 'SELL', 'SELL_SHORT'].includes(side)) {
+          issues.push({ severity: 'ERROR', code: 'INVALID_SIDE', msg: `Invalid side '${rec.side}' (must be BUY/SELL)` });
+        }
+
+        // LEI Check
+        if (!rec.counterparty_lei) {
+          issues.push({ severity: 'WARNING', code: 'MISSING_LEI', msg: 'Missing counterparty LEI' });
+        } else if (!isValidLEI(rec.counterparty_lei)) {
+          issues.push({ severity: 'ERROR', code: 'INVALID_LEI_FORMAT', msg: `LEI '${rec.counterparty_lei}' must be 20 alphanumeric chars` });
+        }
+
+        // Timestamp & Settlement Date Check
+        const txDate = new Date(rec.timestamp);
+        if (isNaN(txDate.getTime())) {
+          issues.push({ severity: 'ERROR', code: 'INVALID_TIMESTAMP', msg: `Invalid ISO 8601 timestamp '${rec.timestamp}'` });
+        }
+
+        if (rec.settlement_date) {
+          const settleDate = new Date(rec.settlement_date);
+          if (isNaN(settleDate.getTime())) {
+            issues.push({ severity: 'ERROR', code: 'INVALID_SETTLEMENT_DATE', msg: 'Invalid settlement date format' });
+          } else if (!isNaN(txDate.getTime()) && settleDate < txDate) {
+            issues.push({ severity: 'WARNING', code: 'RETROACTIVE_SETTLEMENT', msg: 'Settlement date is prior to trade timestamp' });
+          }
+        }
+
+        let overallStatus = 'PASS';
+        if (issues.some(i => i.severity === 'CRITICAL')) overallStatus = 'CRITICAL';
+        else if (issues.some(i => i.severity === 'ERROR')) overallStatus = 'ERROR';
+        else if (issues.some(i => i.severity === 'WARNING')) overallStatus = 'WARNING';
+
+        return { record: rec, issues, status: overallStatus };
+      });
+    }
+
+    let validationResults = [];
+    let currentFilter = 'ALL';
+
+    function parseInput(text) {
+      const trimmed = text.trim();
+      if (!trimmed) return [];
+      if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          return Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          alert('Invalid JSON syntax: ' + e.message);
+          return [];
+        }
+      } else {
+        const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) return [];
+        const headers = lines[0].split(',').map(h => h.trim());
+        return lines.slice(1).map(line => {
+          const vals = line.split(',').map(v => v.trim());
+          const row = {};
+          headers.forEach((h, i) => { row[h] = vals[i] || ''; });
+          return row;
+        });
+      }
+    }
+
+    function render() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = validationResults.filter(item => {
+        if (currentFilter !== 'ALL' && item.status !== currentFilter) return false;
+        if (q) {
+          const issuesStr = item.issues.map(i => i.msg).join(' ');
+          const str = `${item.record.trade_id || ''} ${item.record.isin || ''} ${item.record.security_name || ''} ${issuesStr}`.toLowerCase();
+          if (!str.includes(q)) return false;
+        }
+        return true;
+      });
+
+      const counts = { ALL: validationResults.length, PASS: 0, CRITICAL: 0, ERROR: 0, WARNING: 0 };
+      validationResults.forEach(r => {
+        if (counts[r.status] !== undefined) counts[r.status]++;
+      });
+
+      document.getElementById('countAll').textContent = counts.ALL;
+      document.getElementById('countPass').textContent = counts.PASS;
+      document.getElementById('countCritical').textContent = counts.CRITICAL;
+      document.getElementById('countError').textContent = counts.ERROR;
+      document.getElementById('countWarning').textContent = counts.WARNING;
+
+      const scorePct = counts.ALL ? Math.round((counts.PASS / counts.ALL) * 100) : 0;
+      document.getElementById('kpiScore').textContent = `${scorePct}%`;
+      document.getElementById('kpiScoreSub').textContent = `${counts.PASS} of ${counts.ALL} clean records`;
+      document.getElementById('kpiCritical').textContent = counts.CRITICAL;
+      document.getElementById('kpiErrors').textContent = counts.ERROR;
+      document.getElementById('kpiWarnings').textContent = counts.WARNING;
+
+      const tbody = document.getElementById('resultsTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color: var(--text-muted); text-align: center;">No records found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        let badgeClass = 'badge-pass';
+        if (item.status === 'CRITICAL') badgeClass = 'badge-critical';
+        else if (item.status === 'ERROR') badgeClass = 'badge-error';
+        else if (item.status === 'WARNING') badgeClass = 'badge-warning';
+
+        const issuesHtml = item.issues.length === 0
+          ? '<span style="color: #34d399; font-size: 0.8rem;">✓ Valid & Compliant</span>'
+          : item.issues.map(i => {
+              const cls = i.severity === 'CRITICAL' ? 'issue-critical' : (i.severity === 'ERROR' ? 'issue-error' : 'issue-warning');
+              return `<div class="issue-item ${cls}"><strong>[${i.severity}]</strong> ${i.msg}</div>`;
+            }).join('');
+
+        return `
+          <tr>
+            <td><span class="badge ${badgeClass}">${item.status}</span></td>
+            <td><code>${item.record.trade_id || 'N/A'}</code></td>
+            <td>
+              <code>${item.record.isin || 'N/A'}</code><br>
+              <small style="color:var(--text-muted)">${item.record.security_name || ''}</small>
+            </td>
+            <td>
+              <strong>${item.record.side || '-'}</strong> ${item.record.quantity || '-'} @ $${item.record.price || '-'}
+            </td>
+            <td><code>${item.record.currency || '-'}</code></td>
+            <td>${issuesHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function runValidation() {
+      const text = document.getElementById('dataInput').value;
+      const records = parseInput(text);
+      validationResults = validateDataset(records);
+      render();
+    }
+
+    document.getElementById('loadJsonBtn').addEventListener('click', () => {
+      document.getElementById('dataInput').value = sampleJsonText;
+      runValidation();
+    });
+
+    document.getElementById('loadCsvBtn').addEventListener('click', () => {
+      document.getElementById('dataInput').value = sampleCsvText;
+      runValidation();
+    });
+
+    document.getElementById('validateBtn').addEventListener('click', runValidation);
+    document.getElementById('searchInput').addEventListener('input', render);
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        render();
+      });
+    });
+
+    document.getElementById('exportAuditBtn').addEventListener('click', () => {
+      if (validationResults.length === 0) return alert('Run validation first!');
+      const json = JSON.stringify(validationResults, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'data-quality-audit.json';
+      a.click();
+    });
+
+    // Auto-load initial JSON
+    document.getElementById('dataInput').value = sampleJsonText;
+    runValidation();
+  </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+[
+  {
+    "trade_id": "TRD-88001",
+    "timestamp": "2026-09-01T10:14:22Z",
+    "isin": "US0378331005",
+    "security_name": "Apple Inc. Common Stock",
+    "side": "BUY",
+    "quantity": 500,
+    "price": 224.50,
+    "currency": "USD",
+    "counterparty_lei": "5493006MHB84DD0ZWV18",
+    "settlement_date": "2026-09-03"
+  },
+  {
+    "trade_id": "TRD-88002",
+    "timestamp": "2026-09-01T10:18:05Z",
+    "isin": "US0378331009",
+    "security_name": "Invalid ISIN Test Stock",
+    "side": "SELL",
+    "quantity": 1200,
+    "price": 18.25,
+    "currency": "USD",
+    "counterparty_lei": "5493001KJTIIGC8Y1R12",
+    "settlement_date": "2026-09-03"
+  },
+  {
+    "trade_id": "TRD-88003",
+    "timestamp": "2026-09-02T11:05:40Z",
+    "isin": "GB0002374006",
+    "security_name": "Diageo plc Ordinary Shares",
+    "side": "BUY",
+    "quantity": -200,
+    "price": 28.90,
+    "currency": "GBP",
+    "counterparty_lei": "21380068P1DRHMJ8KU70",
+    "settlement_date": "2026-09-04"
+  },
+  {
+    "trade_id": "TRD-88004",
+    "timestamp": "2026-09-02T14:30:00Z",
+    "isin": "DE0007100000",
+    "security_name": "Mercedes-Benz Group AG",
+    "side": "BUY",
+    "quantity": 850,
+    "price": 62.40,
+    "currency": "EURR",
+    "counterparty_lei": "529900B5B11J7G7Y9716",
+    "settlement_date": "2026-09-04"
+  },
+  {
+    "trade_id": "TRD-88005",
+    "timestamp": "INVALID_DATE_FORMAT",
+    "isin": "US5949181045",
+    "security_name": "Microsoft Corp",
+    "side": "BUY",
+    "quantity": 400,
+    "price": 415.80,
+    "currency": "USD",
+    "counterparty_lei": "INVALID_LEI_TOO_SHORT",
+    "settlement_date": "2026-09-04"
+  },
+  {
+    "trade_id": "TRD-88006",
+    "timestamp": "2026-09-03T09:12:10Z",
+    "isin": "US02079K3059",
+    "security_name": "Alphabet Inc. Class A",
+    "side": "HOLD",
+    "quantity": 300,
+    "price": -150.00,
+    "currency": "USD",
+    "counterparty_lei": "5493006MHB84DD0ZWV18",
+    "settlement_date": "2026-09-01"
+  },
+  {
+    "trade_id": "TRD-88001",
+    "timestamp": "2026-09-03T15:45:00Z",
+    "isin": "US0378331005",
+    "security_name": "Apple Inc. Duplicate Record",
+    "side": "BUY",
+    "quantity": 100,
+    "price": 225.10,
+    "currency": "USD",
+    "counterparty_lei": "5493006MHB84DD0ZWV18",
+    "settlement_date": "2026-09-05"
+  },
+  {
+    "trade_id": "TRD-88007",
+    "timestamp": "2026-09-04T12:00:00Z",
+    "isin": "FR0000120271",
+    "security_name": "TotalEnergies SE",
+    "side": "SELL",
+    "quantity": 1500,
+    "price": 64.20,
+    "currency": "EUR",
+    "counterparty_lei": "529900W18LQJJN6SJ336",
+    "settlement_date": "2026-09-06"
+  }
+]

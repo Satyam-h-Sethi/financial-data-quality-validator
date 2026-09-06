@@ -1,6 +1,14 @@
 # Financial Data Quality Validator
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-quality.satyamsethi.dpdns.org-3b82f6?style=for-the-badge&logo=cloudflare&logoColor=white)](https://quality.satyamsethi.dpdns.org)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-Deployment-F38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)](https://financial-data-quality-validator.pages.dev)
+
 A zero-dependency rule-based financial data validation engine and compliance audit dashboard. Enforces ISO standards, security checksums, entity identifier integrity, and trade lifecycle business logic across JSON and CSV feeds.
+
+## 🌐 Live Demo
+
+- **Primary Custom Domain**: [https://quality.satyamsethi.dpdns.org](https://quality.satyamsethi.dpdns.org)
+- **Cloudflare Pages Direct**: [https://financial-data-quality-validator.pages.dev](https://financial-data-quality-validator.pages.dev)
 
 ## Core Validation Checks
 
